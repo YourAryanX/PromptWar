@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
 interface Task {
@@ -26,7 +26,13 @@ interface Props {
   projectTitle: string
 }
 
-function SortableItem({ task }: { task: Task }) {
+interface SortableItemProps {
+  task: Task
+  onMoveLeft?: () => void
+  onMoveRight?: () => void
+}
+
+function SortableItem({ task, onMoveLeft, onMoveRight }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
 
@@ -46,6 +52,20 @@ function SortableItem({ task }: { task: Task }) {
               {task.difficulty}
             </Badge>
           )}
+          <div className="flex gap-1 mt-3 justify-end">
+            {onMoveLeft && (
+              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={(e) => { e.stopPropagation(); onMoveLeft(); }}>
+                <ArrowLeft className="w-3 h-3" />
+                <span className="sr-only">Move left</span>
+              </Button>
+            )}
+            {onMoveRight && (
+              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full" onClick={(e) => { e.stopPropagation(); onMoveRight(); }}>
+                <ArrowRight className="w-3 h-3" />
+                <span className="sr-only">Move right</span>
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -57,7 +77,9 @@ export default function KanbanClient({ initialTasks, projectId, projectTitle }: 
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [addingToCol, setAddingToCol] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const supabase = createClient()
+  
+  // Memoize client to prevent recreation
+  const [supabase] = useState(() => createClient())
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -75,9 +97,8 @@ export default function KanbanClient({ initialTasks, projectId, projectTitle }: 
 
     // Persist the new sort order to Supabase
     startTransition(async () => {
-      for (let i = 0; i < newTasks.length; i++) {
-        await supabase.from('tasks').update({ sort_order: i }).eq('id', newTasks[i].id)
-      }
+      const updates = newTasks.map((t, i) => supabase.from('tasks').update({ sort_order: i }).eq('id', t.id))
+      await Promise.all(updates)
     })
   }
 
@@ -109,13 +130,21 @@ export default function KanbanClient({ initialTasks, projectId, projectTitle }: 
 
   return (
     <div className="h-full flex flex-col">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight text-glow mb-2">Build Roadmap</h1>
-        <p className="text-muted-foreground">{projectTitle}</p>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-glow mb-2">Build Roadmap</h1>
+          <p className="text-muted-foreground">{projectTitle}</p>
+        </div>
+        {isPending && (
+          <div className="flex items-center text-sm text-muted-foreground gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Saving changes...
+          </div>
+        )}
       </motion.div>
 
       <div className="flex-1 overflow-x-auto">
-        <div className="flex gap-6 min-w-max h-full pb-4">
+        <p className="sr-only" id="kanban-desc">Use arrow keys or move buttons to reorder and transition tasks.</p>
+        <div className="flex gap-6 min-w-max h-full pb-4" aria-describedby="kanban-desc">
           <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
             {columns.map((col, idx) => (
               <motion.div
@@ -145,7 +174,12 @@ export default function KanbanClient({ initialTasks, projectId, projectTitle }: 
                     strategy={verticalListSortingStrategy}
                   >
                     {tasks.filter((t) => t.status === col.key).map((task) => (
-                      <SortableItem key={task.id} task={task} />
+                      <SortableItem 
+                        key={task.id} 
+                        task={task} 
+                        onMoveLeft={idx > 0 ? () => handleStatusChange(task.id, columns[idx - 1].key) : undefined}
+                        onMoveRight={idx < columns.length - 1 ? () => handleStatusChange(task.id, columns[idx + 1].key) : undefined}
+                      />
                     ))}
                   </SortableContext>
 

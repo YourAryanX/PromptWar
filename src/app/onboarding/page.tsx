@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { upsertProfile } from '@/app/actions/profile'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const SKILL_OPTIONS = [
   'Python', 'JavaScript', 'TypeScript', 'Java', 'C++', 'C#',
@@ -20,7 +22,9 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [skills, setSkills] = useState<string[]>([])
+  const [interests, setInterests] = useState('')
   const [saving, setSaving] = useState(false)
+  const router = useRouter()
   
   const toggleSkill = (skill: string) => {
     setSkills(prev => 
@@ -31,12 +35,26 @@ export default function OnboardingPage() {
   }
 
   const handleNext = async () => {
-    if (step < 2) {
+    if (step < 3) {
       setStep(step + 1)
     } else {
+      if (!interests.trim()) {
+        toast.error("Please enter your interests so we can tailor your ideas!")
+        return
+      }
       setSaving(true)
-      await upsertProfile(name, skills)
-      // upsertProfile redirects to /ideas on success, so no need to do it here
+      try {
+        const res = await upsertProfile(name, skills, interests)
+        if (res.error) {
+          toast.error(res.error)
+          setSaving(false)
+        } else {
+          router.push('/ideas')
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Failed to save profile.")
+        setSaving(false)
+      }
     }
   }
 
@@ -44,14 +62,14 @@ export default function OnboardingPage() {
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Animated Blobs for Glassmorphism */}
       <motion.div 
-        animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 15, repeat: Infinity }}
-        className="absolute top-[10%] -left-[10%] w-[50rem] h-[50rem] bg-indigo-500/20 rounded-full blur-[150px] -z-10"
+        animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 20, repeat: Infinity }}
+        className="absolute top-[10%] -left-[10%] w-[30rem] h-[30rem] bg-indigo-500/20 rounded-full blur-3xl -z-10 will-change-transform"
       />
       <motion.div 
-        animate={{ scale: [1, 1.4, 1], opacity: [0.1, 0.3, 0.1] }}
-        transition={{ duration: 18, repeat: Infinity, delay: 2 }}
-        className="absolute bottom-[10%] -right-[10%] w-[45rem] h-[45rem] bg-pink-500/20 rounded-full blur-[130px] -z-10"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 25, repeat: Infinity, delay: 2 }}
+        className="absolute bottom-[10%] -right-[10%] w-[25rem] h-[25rem] bg-pink-500/20 rounded-full blur-3xl -z-10 will-change-transform"
       />
 
       <div className="w-full max-w-2xl relative">
@@ -59,10 +77,10 @@ export default function OnboardingPage() {
           
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold tracking-tight text-glow">
-              {step === 1 ? 'Welcome to PromptWar' : 'Your Skill Matrix'}
+              {step === 1 ? 'Welcome to PromptWar' : step === 2 ? 'Your Skill Matrix' : 'Your Interests'}
             </h1>
             <div className="text-sm font-medium text-muted-foreground bg-white/10 dark:bg-black/20 px-3 py-1 rounded-full border border-white/10">
-              Step {step} of 2
+              Step {step} of 3
             </div>
           </div>
 
@@ -108,6 +126,8 @@ export default function OnboardingPage() {
                         <Badge
                           onClick={() => toggleSkill(skill)}
                           variant="outline"
+                          role="checkbox"
+                          aria-checked={isSelected}
                           className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border-white/20 backdrop-blur-md ${
                             isSelected 
                               ? 'bg-primary text-primary-foreground border-primary shadow-[0_0_15px_rgba(var(--primary),0.5)]' 
@@ -119,6 +139,33 @@ export default function OnboardingPage() {
                       </motion.div>
                     )
                   })}
+                </div>
+              </motion.div>
+            )}
+
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium ml-1">What domains or topics interest you?</label>
+                  <p className="text-muted-foreground text-xs ml-1 mb-2">
+                    E.g., "Healthcare and AI", "Fintech apps", "Web3 and block chain", "Sustainability".
+                  </p>
+                  <Input 
+                    placeholder="E.g. AI-powered education tools" 
+                    value={interests}
+                    onChange={(e) => setInterests(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleNext()
+                    }}
+                    className="bg-white/10 dark:bg-black/10 border-white/20 h-14 rounded-xl text-lg focus-visible:ring-primary/50"
+                  />
                 </div>
               </motion.div>
             )}
@@ -140,7 +187,7 @@ export default function OnboardingPage() {
             >
               {saving ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</>
-              ) : step === 2 ? 'Save & Generate Ideas' : 'Continue'}
+              ) : step === 3 ? 'Save & Generate Ideas' : 'Continue'}
             </Button>
           </div>
 

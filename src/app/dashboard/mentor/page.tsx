@@ -4,9 +4,10 @@ import MentorClient from './mentor-client'
 
 export default async function MentorPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
 
-  if (!user) redirect('/login')
+  if (!session?.user) redirect('/login')
+  const user = session.user
 
   // Get the active project
   const { data: project } = await supabase

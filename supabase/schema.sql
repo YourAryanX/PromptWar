@@ -13,6 +13,7 @@ create table if not exists public.profiles (
   id uuid references auth.users(id) on delete cascade primary key,
   name text not null,
   skills text[] default '{}',
+  interests text,
   college text,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null

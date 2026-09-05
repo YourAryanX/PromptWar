@@ -15,13 +15,17 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = { ...options, maxAge: 60 * 60 * 24 * 30 }
+            request.cookies.set(name, value)
+          })
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = { ...options, maxAge: 60 * 60 * 24 * 30 }
+            supabaseResponse.cookies.set(name, value, cookieOptions)
+          })
         },
       },
     }
@@ -32,6 +36,31 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  const pathname = request.nextUrl.pathname
+  const PROTECTED_ROUTES = ['/dashboard', '/ideas', '/onboarding']
+  const AUTH_ROUTES = ['/login']
+
+  const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route))
+  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route))
+
+  if (isProtected && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  if (isAuthRoute && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  if (pathname === '/' && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
 
   return supabaseResponse
 }

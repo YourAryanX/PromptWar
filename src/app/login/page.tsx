@@ -48,25 +48,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Animated Blobs */}
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-          x: [0, 100, 0],
-          y: [0, -50, 0]
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        className="absolute top-[20%] left-[20%] w-[40rem] h-[40rem] bg-primary/20 rounded-full blur-[120px] -z-10"
+      <div 
+        className="absolute top-[20%] left-[20%] w-[30rem] h-[30rem] bg-primary/10 rounded-full blur-3xl -z-10 pointer-events-none"
       />
-      <motion.div 
-        animate={{ 
-          scale: [1, 1.5, 1],
-          opacity: [0.2, 0.4, 0.2],
-          x: [0, -100, 0],
-          y: [0, 100, 0]
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-[20%] right-[20%] w-[35rem] h-[35rem] bg-blue-500/20 rounded-full blur-[100px] -z-10"
+      <div 
+        className="absolute bottom-[20%] right-[20%] w-[25rem] h-[25rem] bg-blue-500/10 rounded-full blur-3xl -z-10 pointer-events-none"
       />
 
       <motion.div
