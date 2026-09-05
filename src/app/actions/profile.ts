@@ -29,7 +29,7 @@ export async function upsertProfile(name: string, skills: string[], interests: s
     }
 
     return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Validation failed' }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Validation failed' }
   }
 }

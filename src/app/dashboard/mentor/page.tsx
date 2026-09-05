@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import MentorClient from './mentor-client'
+
+export const metadata: Metadata = {
+  title: 'AI Mentor — PromptWar',
+  description: 'Get expert AI guidance on your capstone project anytime.',
+}
 
 export default async function MentorPage() {
   const supabase = await createClient()

@@ -51,8 +51,8 @@ export default function OnboardingPage() {
         } else {
           router.push('/ideas')
         }
-      } catch (err: any) {
-        toast.error(err.message || "Failed to save profile.")
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to save profile.")
         setSaving(false)
       }
     }
@@ -116,7 +116,7 @@ export default function OnboardingPage() {
                 className="space-y-6"
               >
                 <p className="text-muted-foreground text-sm">
-                  Select the technologies you already know. We'll use these to suggest realistic capstone projects.
+                  Select the technologies you already know. We&apos;ll use these to suggest realistic capstone projects.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {SKILL_OPTIONS.map((skill) => {
@@ -155,7 +155,7 @@ export default function OnboardingPage() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium ml-1">What domains or topics interest you?</label>
                   <p className="text-muted-foreground text-xs ml-1 mb-2">
-                    E.g., "Healthcare and AI", "Fintech apps", "Web3 and block chain", "Sustainability".
+                    E.g., &quot;Healthcare and AI&quot;, &quot;Fintech apps&quot;, &quot;Web3 and block chain&quot;, &quot;Sustainability&quot;.
                   </p>
                   <Input 
                     placeholder="E.g. AI-powered education tools" 

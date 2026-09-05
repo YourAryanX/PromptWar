@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import SettingsClient from './page-client'
+
+export const metadata: Metadata = {
+  title: 'Settings — PromptWar',
+  description: 'Manage your profile, skills, and project settings.',
+}
 
 export default async function SettingsPage() {
   const supabase = await createClient()

@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Send, Bot, User, Sparkles } from 'lucide-react'
 
 interface Message {
@@ -154,11 +153,13 @@ export default function MentorClient({ projectId, projectTitle, techStack, initi
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything about your project..."
+              aria-label="Ask your AI Mentor"
               className="flex-1 rounded-full h-14 bg-white/50 dark:bg-zinc-900/50 border-white/20 pl-6 pr-14 focus-visible:ring-primary shadow-inner"
             />
             <Button
               type="submit"
               size="icon"
+              aria-label="Send message"
               className="absolute right-2 top-2 h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-transform active:scale-90"
               disabled={isLoading || !input.trim()}
             >

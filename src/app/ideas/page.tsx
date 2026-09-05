@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import IdeasClientPage from './page-client'
+
+export const metadata: Metadata = {
+  title: 'Project Ideas — PromptWar',
+  description: 'AI-generated capstone project ideas tailored to your skills and interests.',
+}
 
 export default async function IdeasPage() {
   const supabase = await createClient()

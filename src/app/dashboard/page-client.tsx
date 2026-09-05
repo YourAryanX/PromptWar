@@ -15,6 +15,7 @@ interface Props {
     tech_stack: string[]
     difficulty: string
     submission_date: string | null
+    wow_factor?: string | null
   } | null
   taskTotal: number
   taskDone: number
@@ -43,7 +44,7 @@ export default function DashboardOverviewClient({ project, taskTotal, taskDone, 
         <Sparkles className="w-16 h-16 text-primary/40" />
         <h2 className="text-3xl font-bold">No project yet!</h2>
         <p className="text-muted-foreground max-w-sm">
-          You haven't selected a capstone project. Let our AI Mentor generate ideas tailored to your skills.
+          You haven&apos;t selected a capstone project. Let our AI Mentor generate ideas tailored to your skills.
         </p>
         <Button onClick={() => router.push('/ideas')} size="lg" className="rounded-full px-8">
           Generate My Ideas
@@ -162,12 +163,12 @@ export default function DashboardOverviewClient({ project, taskTotal, taskDone, 
               <div className="p-3 rounded-lg bg-black/20 text-sm border border-white/5 relative">
                 <div className="absolute -left-1.5 top-4 w-3 h-3 rounded-full bg-indigo-500 animate-pulse" />
                 <p className="text-indigo-300 font-medium mb-1">Architecture Advice</p>
-                <p className="text-muted-foreground text-xs leading-relaxed">"Given your tech stack, I recommend using Prisma ORM for type safety with your Next.js API routes."</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">&quot;Given your tech stack, I recommend using Prisma ORM for type safety with your Next.js API routes.&quot;</p>
               </div>
               <div className="p-3 rounded-lg bg-black/20 text-sm border border-white/5 relative">
                 <div className="absolute -left-1.5 top-4 w-3 h-3 rounded-full bg-rose-500" />
                 <p className="text-rose-300 font-medium mb-1">Code Review</p>
-                <p className="text-muted-foreground text-xs leading-relaxed">"Your authentication logic is solid, but remember to add middleware for route protection."</p>
+                <p className="text-muted-foreground text-xs leading-relaxed">&quot;Your authentication logic is solid, but remember to add middleware for route protection.&quot;</p>
               </div>
             </CardContent>
           </Card>

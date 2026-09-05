@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import KanbanClient from './kanban-client'
+
+export const metadata: Metadata = {
+  title: 'Build Roadmap — PromptWar',
+  description: 'Manage your project milestones with a Kanban board.',
+}
 
 export default async function KanbanPage() {
   const supabase = await createClient()

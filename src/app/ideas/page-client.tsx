@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, RefreshCcw } from 'lucide-react'
+import { Loader2, Sparkles, CheckCircle2, AlertTriangle, ArrowRight, RefreshCcw, WandSparkles } from 'lucide-react'
 import { createProject } from '@/app/actions/projects'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Textarea } from '@/components/ui/textarea'
 
 interface ProjectIdea {
   title: string
@@ -30,6 +31,9 @@ export default function IdeasClientPage({ skills, interests }: Props) {
   const [ideas, setIdeas] = useState<ProjectIdea[]>([])
   const [selectedIdea, setSelectedIdea] = useState<ProjectIdea | null>(null)
   const [showRealityCheck, setShowRealityCheck] = useState(false)
+  const [refiningIdea, setRefiningIdea] = useState<ProjectIdea | null>(null)
+  const [refineFeedback, setRefineFeedback] = useState('')
+  const [refineLoading, setRefineLoading] = useState(false)
   const router = useRouter()
 
   const generateIdeas = async () => {
@@ -54,9 +58,9 @@ export default function IdeasClientPage({ skills, interests }: Props) {
       } else {
         throw new Error('Invalid response from AI')
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error)
-      toast.error(error.message || "Failed to generate ideas. Please try again.")
+      toast.error(error instanceof Error ? error.message : "Failed to generate ideas. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -84,9 +88,41 @@ export default function IdeasClientPage({ skills, interests }: Props) {
       } else {
         router.push('/dashboard')
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save project.")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save project.")
       setCommitting(false)
+    }
+  }
+
+  const handleRefineIdea = async (idea: ProjectIdea) => {
+    if (!refineFeedback.trim()) {
+      toast.error('Please enter your feedback first.')
+      return
+    }
+    setRefineLoading(true)
+    try {
+      const res = await fetch('/api/generate-ideas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          skills,
+          interests,
+          refineContext: `Original idea: "${idea.title}" - ${idea.description}. User feedback: ${refineFeedback}`,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to refine idea')
+      if (data.projects?.length) {
+        // Replace just this one idea in the list
+        setIdeas(prev => prev.map(i => i.title === idea.title ? data.projects[0] : i))
+        toast.success('Idea refined!')
+        setRefiningIdea(null)
+        setRefineFeedback('')
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Refinement failed')
+    } finally {
+      setRefineLoading(false)
     }
   }
 
@@ -118,12 +154,22 @@ export default function IdeasClientPage({ skills, interests }: Props) {
               <Button 
                 onClick={generateIdeas}
                 size="lg"
+                aria-label="Generate project ideas based on your skills"
                 className="rounded-full bg-primary text-primary-foreground shadow-[0_0_20px_rgba(var(--primary),0.6)] px-8 py-6 text-lg font-semibold"
               >
                 <Sparkles className="mr-2 w-5 h-5" />
                 Generate My Ideas
               </Button>
             </motion.div>
+          )}
+          {ideas.length > 0 && !loading && !showRealityCheck && (
+            <Button 
+              onClick={generateIdeas} 
+              variant="ghost" 
+              className="mt-6 rounded-full text-muted-foreground hover:text-foreground"
+            >
+              <RefreshCcw className="w-4 h-4 mr-2" /> Regenerate
+            </Button>
           )}
         </motion.div>
 
@@ -196,15 +242,53 @@ export default function IdeasClientPage({ skills, interests }: Props) {
                       </div>
                     </CardContent>
                     
-                    <CardFooter className="pt-4 border-t border-white/10 mt-auto">
+                    <CardFooter className="pt-4 border-t border-white/10 mt-auto flex gap-2">
+                      <Button 
+                        onClick={() => setRefiningIdea(refiningIdea?.title === idea.title ? null : idea)}
+                        variant="outline"
+                        size="sm"
+                        aria-label={`Refine idea: ${idea.title}`}
+                        className="rounded-xl flex-1 border-white/20 hover:bg-white/10"
+                      >
+                        <WandSparkles className="w-3.5 h-3.5 mr-1.5" /> Refine
+                      </Button>
                       <Button 
                         onClick={() => handleSelect(idea)}
-                        className="w-full rounded-xl glass bg-white/20 hover:bg-white/40 dark:bg-white/10 dark:hover:bg-white/20 text-foreground transition-all group-hover:shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                        size="sm"
+                        aria-label={`Select idea: ${idea.title}`}
+                        className="rounded-xl flex-1 glass bg-white/20 hover:bg-white/40 dark:bg-white/10 dark:hover:bg-white/20 text-foreground transition-all"
                       >
-                        Select & Analyze
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        Select <ArrowRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardFooter>
+
+                    {/* Inline Refine Panel */}
+                    {refiningIdea?.title === idea.title && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-6 pb-6 space-y-2 overflow-hidden"
+                      >
+                        <Textarea
+                          autoFocus
+                          value={refineFeedback}
+                          onChange={e => setRefineFeedback(e.target.value)}
+                          placeholder="e.g. Make it more focused on machine learning, remove the mobile app component..."
+                          aria-label="Refinement feedback"
+                          className="bg-black/10 dark:bg-black/30 border-white/10 text-sm rounded-xl resize-none h-20"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => handleRefineIdea(idea)}
+                          disabled={refineLoading}
+                          className="w-full rounded-xl text-xs"
+                        >
+                          {refineLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <WandSparkles className="w-3 h-3 mr-1" />}
+                          Apply Refinement
+                        </Button>
+                      </motion.div>
+                    )}
                   </Card>
                 </motion.div>
               ))}

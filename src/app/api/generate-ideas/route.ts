@@ -12,7 +12,7 @@ const limiter = rateLimit({
   uniqueTokenPerInterval: 500,
 });
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -64,8 +64,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(object);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating ideas:', error);
-    return NextResponse.json({ error: error.message || 'Failed to generate ideas' }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

@@ -30,7 +30,7 @@ export default function Home() {
         </div>
         
         <h2 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
-          Don't just build a project.<br />
+          Don&apos;t just build a project.<br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-primary to-rose-400 text-glow">
             Build a Masterpiece.
           </span>

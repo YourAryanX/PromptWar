@@ -64,8 +64,8 @@ Write professionally. Make it sound highly academic and impressive for a univers
     })
 
     return NextResponse.json({ proposal: text })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error generating proposal:', error)
-    return NextResponse.json({ error: error.message || 'Failed to generate proposal' }, { status: 500 })
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
   }
 }

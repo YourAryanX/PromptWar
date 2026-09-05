@@ -53,13 +53,13 @@ export async function createProject(
             })
           ).length(7).describe('Exactly 7 sequential development tasks from setup to deployment'),
         }),
-        prompt: \`You are an expert technical project manager. Break down the following capstone project into exactly 7 sequential development tasks (Kanban milestones).
-        Project Title: \${validatedData.title}
-        Description: \${validatedData.description}
-        Tech Stack: \${validatedData.techStack.join(', ')}
-        Wow Factor: \${validatedData.wowFactor}
+        prompt: `You are an expert technical project manager. Break down the following capstone project into exactly 7 sequential development tasks (Kanban milestones).
+        Project Title: ${validatedData.title}
+        Description: ${validatedData.description}
+        Tech Stack: ${validatedData.techStack.join(', ')}
+        Wow Factor: ${validatedData.wowFactor}
         
-        The tasks should follow a logical software development lifecycle (e.g., Setup -> Schema -> Core API -> Core UI -> Feature X -> Wow Factor -> Testing/Deployment).\`,
+        The tasks should follow a logical software development lifecycle (e.g., Setup -> Schema -> Core API -> Core UI -> Feature X -> Wow Factor -> Testing/Deployment).`,
       })
       
       starterTasks = object.tasks.map((t, index) => ({
@@ -72,11 +72,11 @@ export async function createProject(
       console.error('Failed to generate AI tasks, falling back to defaults', aiError)
       // Fallback tasks
       starterTasks = [
-        { title: \`Set up project repository & README\`, status: 'todo', difficulty: 'Easy', sort_order: 0 },
-        { title: \`Configure development environment\`, status: 'todo', difficulty: 'Easy', sort_order: 1 },
-        { title: \`Design database schema\`, status: 'todo', difficulty: 'Medium', sort_order: 2 },
-        { title: \`Build core UI layouts\`, status: 'todo', difficulty: 'Medium', sort_order: 3 },
-        { title: \`Implement authentication\`, status: 'todo', difficulty: 'Medium', sort_order: 4 },
+        { title: `Set up project repository & README`, status: 'todo', difficulty: 'Easy', sort_order: 0 },
+        { title: `Configure development environment`, status: 'todo', difficulty: 'Easy', sort_order: 1 },
+        { title: `Design database schema`, status: 'todo', difficulty: 'Medium', sort_order: 2 },
+        { title: `Build core UI layouts`, status: 'todo', difficulty: 'Medium', sort_order: 3 },
+        { title: `Implement authentication`, status: 'todo', difficulty: 'Medium', sort_order: 4 },
       ]
     }
 
@@ -85,8 +85,8 @@ export async function createProject(
     )
 
     return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Validation failed' }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Validation failed' }
   }
 }
 
@@ -110,7 +110,7 @@ export async function updateProjectDeadline(projectId: string, deadline: string)
     }
 
     return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Failed to update deadline' }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Failed to update deadline' }
   }
 }

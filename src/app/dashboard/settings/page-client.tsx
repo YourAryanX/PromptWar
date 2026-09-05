@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +10,7 @@ import { toast } from 'sonner'
 import { upsertProfile } from '@/app/actions/profile'
 import { updateProjectDeadline } from '@/app/actions/projects'
 
-export default function SettingsClient({ profile, email, project }: { profile: any, email: string, project?: any }) {
+export default function SettingsClient({ profile, email, project }: { profile: { name: string; skills: string[]; interests: string }, email: string, project: { id: string; submission_date: string | null } | null }) {
   const [loading, setLoading] = useState(false)
   const [name, setName] = useState(profile?.name || '')
   const [interests, setInterests] = useState(profile?.interests || '')
@@ -27,8 +26,8 @@ export default function SettingsClient({ profile, email, project }: { profile: a
       }
       
       toast.success("Settings updated successfully")
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update settings")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile')
     } finally {
       setLoading(false)
     }

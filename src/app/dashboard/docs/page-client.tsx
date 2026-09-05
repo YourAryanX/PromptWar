@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { FileText, Loader2, Download, CheckCircle, FileOutput } from 'lucide-react'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
 
-export default function DocsClient({ project }: { project: any }) {
+export default function DocsClient({ project }: { project: { id: string; title: string } | null }) {
   const [loading, setLoading] = useState(false)
   const [proposal, setProposal] = useState<string | null>(null)
 
@@ -26,8 +25,8 @@ export default function DocsClient({ project }: { project: any }) {
       
       setProposal(data.proposal)
       toast.success('Project Proposal generated successfully!')
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to generate proposal')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate proposal')
     } finally {
       setLoading(false)
     }
@@ -126,7 +125,7 @@ export default function DocsClient({ project }: { project: any }) {
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-30 space-y-4">
                   <FileText className="w-16 h-16" />
-                  <p>Click "Generate Now" to let AI write your project proposal.</p>
+                  <p>Click &quot;Generate Now&quot; to let AI write your project proposal.</p>
                 </div>
               )}
             </div>
