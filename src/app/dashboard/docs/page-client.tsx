@@ -33,7 +33,7 @@ export default function DocsClient({ project }: { project: { id: string; title: 
   }
 
   const handleDownload = () => {
-    if (!proposal) return
+    if (!proposal || !project) return
     const blob = new Blob([proposal], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
